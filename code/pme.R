@@ -47,49 +47,7 @@ source(list.files("subfunctions"))
 
 ## Subsection 1.2, Kernels for minimization in a semi-normed space of Sobolev type
 
-# Smoothing kernel for density estimation 
-# (We applied Gaussian kernel.)
-ker <- function(x, mu, sigma) {
-  yseq <- sapply((x - mu) / sigma, dnorm)
-  return((sigma ^ {-length(x)}) * prod(yseq))
-}
-
-# Reproducing Kernels associated with Sobolev space D^{-2}L^2(R^d)
-eta.kernel <- function(t, lambda) {
-  if (lambda %% 2 == 0) {
-    if (norm_euclidean(t) == 0) {
-      y <- 0
-    } else {
-      y <- (norm_euclidean(t) ^ lambda) * log(norm_euclidean(t))
-    }
-  } else {
-    y <- norm_euclidean(t) ^ lambda
-  }
-  return(y)
-}
-
-eta_kernel <- function(t, lambda) {
-  norm_val <- norm_euclidean(t)
-  if (lambda %% 2 == 0) {
-    if (norm_val == 0) {
-      y <- 0
-    } else {
-      y <- (norm_val ^ lambda) * log(norm_val)
-    }
-  } else {
-    y <- norm_val ^ lambda
-  }
-  return(y)
-}
-
 ## Subsection 1.3, Projection Index function
-projection <- function(x, f, initial.guess) {
-  DD <- function(t) { 
-    return(dist.euclidean(x, f(t))) 
-  }
-  est <- nlm(DD,p=initial.guess)
-  return(est$estimate)
-}
 
 ##### Section 2, High Dimensional Mixture Density Estimation #######
 ####################################################################
@@ -153,7 +111,7 @@ weight.seq <- function(x.obs, mu, sigma, epsilon=0.001, max.iter=1000) {
         2,
         sum
       )
-      f <- dist.euclidean(f1, 1) + dist.euclidean(f2, apply(x.obs, 2, mean))
+      f <- dist_euclidean(f1, 1) + dist_euclidean(f2, apply(x.obs, 2, mean))
       return(f) 
     }
     
@@ -166,7 +124,7 @@ weight.seq <- function(x.obs, mu, sigma, epsilon=0.001, max.iter=1000) {
         1,
         sum
       )   # The new theta's computed from the old theta's
-    abs.diff <- dist.euclidean(theta.new, theta.old)                              # The Euclidean distance between the old and new theta vectors.
+    abs.diff <- dist_euclidean(theta.new, theta.old)                              # The Euclidean distance between the old and new theta vectors.
     if (is.na(abs.diff)) { 
       abs.diff <- 0 
       theta.new <- theta.old 
@@ -210,7 +168,7 @@ hdmde <- function(x.obs, N0, alpha, max.comp) {
     index.temp <- which(km$cluster == j)   
     xi.j <- matrix(x.obs[index.temp, ], nrow = length(index.temp))
     sig.prepare <- function(x) {
-      return((dist.euclidean(x, mu[j, ])) ^ 2) 
+      return((dist_euclidean(x, mu[j, ])) ^ 2) 
     }
     s <- apply(xi.j, 1, sig.prepare)
     sigma.vec[j] <- mean(s)
@@ -247,7 +205,7 @@ hdmde <- function(x.obs, N0, alpha, max.comp) {
       index.temp <- which(km$cluster == j)   
       xi.j <- matrix(x.obs[index.temp, ], nrow = length(index.temp))        
       sig.prepare <- function(x) { 
-        return(dist.euclidean(x, mu[j, ]) ^ 2) 
+        return(dist_euclidean(x, mu[j, ]) ^ 2) 
       }
       s <- apply(xi.j, 1, sig.prepare)
       sigma.vec[j] <- mean(s)
@@ -373,7 +331,7 @@ pme <- function(x.obs, d, N0=20*D, tuning.para.seq=exp((-15:5)), alpha=0.05, max
     E <- matrix(NA, ncol = I, nrow = I)                                          
     for(j in 1:I) {
       E.prepare <- function(t) { 
-        eta.kernel(t - tnew[j, ], lambda) 
+        eta_kernel(t - tnew[j, ], lambda) 
       }
       E[, j] <- apply(tnew, 1, E.prepare) # The matrix E
     }
@@ -407,7 +365,7 @@ pme <- function(x.obs, d, N0=20*D, tuning.para.seq=exp((-15:5)), alpha=0.05, max
     
     eta.func <- function(t) {
       eta.func.prepare <- function(tau) {
-        return(eta.kernel(t - tau, lambda)) 
+        return(eta_kernel(t - tau, lambda)) 
       }
       return(
         matrix(
@@ -449,7 +407,7 @@ pme <- function(x.obs, d, N0=20*D, tuning.para.seq=exp((-15:5)), alpha=0.05, max
     # The first D columns of "x.prin" corresponds to points in the input space
     # and the last d columns of "x.prin" corresponds to the projection indices of these points onto f.
     SSD.prepare <- function(x.prin, f) { 
-      return(dist.euclidean(x.prin[1:D], f(x.prin[(D + 1):(D + d)])) ^ 2) 
+      return(dist_euclidean(x.prin[1:D], f(x.prin[(D + 1):(D + d)])) ^ 2) 
     }
     
     X.projection.index <- cbind(X, tnew) # "tnew" here is the projection index onto fnew, rather than f0. 
@@ -485,7 +443,7 @@ pme <- function(x.obs, d, N0=20*D, tuning.para.seq=exp((-15:5)), alpha=0.05, max
       
       for(j in 1:I) {
         E.prepare <- function(t) { 
-          eta.kernel(t - tnew[j, ], lambda) 
+          eta_kernel(t - tnew[j, ], lambda) 
         }
         E[, j] <- apply(tnew, 1, E.prepare)                                     
       }
@@ -517,7 +475,7 @@ pme <- function(x.obs, d, N0=20*D, tuning.para.seq=exp((-15:5)), alpha=0.05, max
       
       eta.func <- function(t) {
         eta.func.prepare <- function(tau) {
-          return(eta.kernel(t - tau, lambda)) 
+          return(eta_kernel(t - tau, lambda)) 
         }
         return(matrix(apply(tnew, 1, eta.func.prepare), ncol = 1))
       }
@@ -635,7 +593,7 @@ pme <- function(x.obs, d, N0=20*D, tuning.para.seq=exp((-15:5)), alpha=0.05, max
   tnew.opt <- TNEW[[optimal.ind]]
   eta.func <- function(t) {
     eta.func.prepare <- function(tau) { 
-      return(eta.kernel(t - tau, lambda)) 
+      return(eta_kernel(t - tau, lambda)) 
     }
     return(matrix(apply(tnew.opt, 1, eta.func.prepare), ncol = 1))
   }
