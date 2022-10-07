@@ -89,41 +89,6 @@ lpme <- function(df, d, tuning.para.seq = exp(-15:5), alpha = 0.05, max.comp = 1
   xnames <- paste0("x", 1:(dim(x_test)[2]))
   names(x_test_df) <- xnames
   
-  # plot_ly(
-  #   x_test_df,
-  #   x = ~x,
-  #   y = ~y,
-  #   z = ~time,
-  #   type = "scatter3d",
-  #   mode = "markers"
-  # )
-  
-  # tps <- Tps(
-  #   x = x_test[, 1:2],
-  #   Y = x_test[, 3]
-  # )
-  # 
-  # tps_pred_x <- seq(0, 2, 0.1)
-  # tps_pred_y <- seq(-10, 10, 0.2)
-  # tps_pred_z <- predict(
-  #   tps_test,
-  #   expand.grid(tps_pred_x, tps_pred_y)
-  # ) %>% 
-  #   matrix(
-  #     nrow = length(tps_pred_y),
-  #     ncol = length(tps_pred_x),
-  #     byrow = TRUE
-  #   )
-  # 
-  # plot_ly(
-  #   x = tps_pred_x,
-  #   y = tps_pred_y,
-  #   z = tps_pred_z
-  # ) %>% 
-  #   add_surface()
-  # 
-  # return(tps)
-  
   D_new <- dim(x_test)[2]
   d_new <- dim(r)[2]
   n_new <- dim(x_test)[1]
