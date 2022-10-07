@@ -38,7 +38,8 @@ library("vegan")
 library("plot3D")
 library(tidyverse)
 
-source(list.files("subfunctions"))
+list.files("code/subfunctions", full.names = TRUE) %>% 
+  sapply(source)
 
 ############ Section 3, Principal Manifold Estimation ######################
 ############################################################################
@@ -307,7 +308,7 @@ pme <- function(x.obs, d, N0=20*D, tuning.para.seq=exp((-15:5)), alpha=0.05, max
     
     
     # For a fixed tuning parameter value, the corresponding MSD is computed by the following chunk.
-    km <- est$k.means.result
+    km <- est$k_means_result
     data.initial <- matrix(0, nrow = 1, ncol = D + d)
     for(i in 1:I) {
       index.temp <- which(km$cluster == i)
