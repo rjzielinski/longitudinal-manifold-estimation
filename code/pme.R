@@ -40,107 +40,6 @@ library(tidyverse)
 
 source(list.files("subfunctions"))
 
-########### Section 1, Some Basic Functions ########################
-####################################################################
-
-## Subsection 1.1, Functions for Euclidean metrics
-
-## Subsection 1.2, Kernels for minimization in a semi-normed space of Sobolev type
-
-## Subsection 1.3, Projection Index function
-
-##### Section 2, High Dimensional Mixture Density Estimation #######
-####################################################################
-
-## Subsection 2.1 
-# When \mu's and \sigma are given, the following function estimates \hat{\theta}'s.
-
-weight.seq <- function(x.obs, mu, sigma, epsilon=0.001, max.iter=1000) { 
-  
-  # "x.obs" is the data set of interest. 
-  #         There are n observations, and each observation is a D-dimensional point.
-  #         x.obs is a n-by-D matrix.
-  # "mu" is a vector of the knots in a mixture density estimation.
-  # "sigma" is the bandwidth of this density estimation.
-  # "epsilon" is a predetermined tolerance of the Euclidean distance between thetas in two consecutive steps.
-  # "max.iter" is a predetermined upper bound of the number of steps in this iteration.
-  
-  n.D <- dim(x.obs)                  
-  n <- n.D[1]
-  D <- n.D[2]
-  N <- dim(mu)[1]                     
-  
-  A <- matrix(NA,ncol = N,nrow = n)
-  for(j in 1:N){
-    A.prepare <- function(x){ 
-      return(ker(x, mu[j, ], sigma))  
-    }
-    A[,j] <- apply(x.obs, 1, A.prepare) # A[i,j] is \psi_sigma (x_i-mu_j).
-  }
-  
-  # The initial guess for weights, say \theta_j's.
-  theta.old <- rep(1 / N, N)
-  # Absolute value of the difference between "theta.new" and "theta.old".
-  abs.diff <- 10 * epsilon 
-  # Counting the number of steps in this iteration.
-  count <- 0 
-  # The initial guess of the Lagrangian multipliers
-  lambda.hat.old <- c(n, rep(-1, D)) 
-  
-  # The iteration for computing desired theta's
-  while((abs.diff > epsilon) & (count <= max.iter)) { 
-    
-    W <- t(t(A) * theta.old) # \theta_j^{(k)} \times \psi_\sigma(x_i-mu_j)
-    W <- W / apply(W, 1, sum) # W[i,j] is the posterior probability of Z=j|X=x_i, say w_{i,j}(\theta.old).
-    w <- apply(W, 2, sum) # w[j] = \sum_{i=1}^n w_{i,j}
-    
-    flambda <- function(lambda) {
-      # This function is for computing Lagrangian multipliers.
-      denom.temp <- apply( # The denominator sequence: 
-        t(t(cbind(rep(1, dim(mu)[1]), mu)) * lambda), 
-        1, 
-        sum
-      )
-      # \lambda_1+\lambda_2^T \mu_j, j=1,2,...,N.
-      num.temp <- mu * w
-      
-      # \sum_{j=1}^N \frac{ w_ij }{ \lambda_1+\lambda_2^T \mu_j }
-      f1 <- sum(w / denom.temp)          
-      f2 <- apply(
-        num.temp * (as.vector(1 / denom.temp)),
-        2,
-        sum
-      )
-      f <- dist_euclidean(f1, 1) + dist_euclidean(f2, apply(x.obs, 2, mean))
-      return(f) 
-    }
-    
-    lambda.hat <- nlm(flambda, lambda.hat.old, iterlim=1000)$estimate              # The lagrangian multipliers.
-    # We set the Lagrangian multipliers in the previous step 
-    # as the initial guess in this step.
-    theta.new <- w /
-      apply(
-        t(t(cbind(rep(1, dim(mu)[1]), mu)) * lambda.hat),
-        1,
-        sum
-      )   # The new theta's computed from the old theta's
-    abs.diff <- dist_euclidean(theta.new, theta.old)                              # The Euclidean distance between the old and new theta vectors.
-    if (is.na(abs.diff)) { 
-      abs.diff <- 0 
-      theta.new <- theta.old 
-    } # It helps us avoid "NA trouble".
-    
-    theta.old <- pmax(theta.new, 0) # Set the new theta as the old theta for the next iteration step.   
-    theta.old <- pmin(theta.old, 1) # pmax() and pmin() guarantee that theta_j's are in [0,1]. 
-    count <- count + 1
-    lambda.hat.old <- lambda.hat
-  }
-  
-  theta.hat <- pmax(theta.new, 0) # The iteration has stopped.  
-  theta.hat <- pmin(theta.hat, 1) # Again, we guarantee that theta_j's are in [0,1].
-  return(theta.hat) # It returns the estimation of weights \theta_j's.
-}
-
 ## Subsection 2.2
 # Based on the function weight.seq() in Subsection 2.1, we give the following
 # high dimensional mixture density estiamtion function.
@@ -176,7 +75,7 @@ hdmde <- function(x.obs, N0, alpha, max.comp) {
   sig <- sqrt(mean(sigma.vec) / dim(x.obs)[2])
   
   # It gives an estimation of theta_j's with weight.seq().
-  theta.hat <- weight.seq(x.obs, mu, sig)  
+  theta.hat <- weight_seq(x.obs, mu, sig)  
   
   # The following block gives an approximation to the underlying density function of interest.
   # This estimation is of the form of weights times scaled kernels.
@@ -212,7 +111,7 @@ hdmde <- function(x.obs, N0, alpha, max.comp) {
     }
     sig <- sqrt(mean(sigma.vec) / dim(x.obs)[2])
     
-    theta.hat <- weight.seq(x.obs, mu, sig) 
+    theta.hat <- weight_seq(x.obs, mu, sig) 
     
     f.test <- function(x) {
       fun.prepare <- function(t) { 
