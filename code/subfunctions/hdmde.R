@@ -14,7 +14,7 @@ hdmde <- function(x_obs, N0, alpha, max_comp) {
   N <- N0
   
   # Use k-means clustering to get N clusters of x_obs
-  km <- kmeans(x_obs, N, iter_max = 100, nstart = 100)
+  km <- kmeans(x_obs, N, iter.max = 100, nstart = 100)
   mu <- km$centers # set centers of clusters as means of density components
   
   sigma_vec <- rep(NA, N)
@@ -46,7 +46,7 @@ hdmde <- function(x_obs, N0, alpha, max_comp) {
   while ((test_rejection == 1) & (N <= min(n, max_comp))) {
     N <- N + 1
     
-    km <- kmeans(x_obs, N, iter_max = 100, nstart = 100)
+    km <- kmeans(x_obs, N, iter.max = 100, nstart = 100)
     mu <- km$centers
     
     sigma_vec <- rep(NA, N)
