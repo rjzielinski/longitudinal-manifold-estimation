@@ -38,7 +38,7 @@ library("vegan")
 library("plot3D")
 library(tidyverse)
 
-
+source(list.files("subfunctions"))
 
 ########### Section 1, Some Basic Functions ########################
 ####################################################################
@@ -46,15 +46,6 @@ library(tidyverse)
 ## Subsection 1.1, Functions for Euclidean metrics
 
 # Norm function in an Euclidean space of any dimension
-norm.euclidean <- function(x) { 
-  return(norm(matrix(x, ncol=1), type = "F")) 
-}
-
-norm_euclidean <- function(x) {
-  norm_val <- sum(as.vector(x) ^ 2) %>% 
-    sqrt()
-  return(norm_val)
-}
 
 # Distance function in an Euclidean space of any dimension
 dist.euclidean <- function(x, y) { 
