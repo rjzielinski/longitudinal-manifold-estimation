@@ -68,7 +68,7 @@ hdmde <- function(x_obs, N0, alpha, max_comp) {
         return(ker(x, t, sig))
       }
       comp_vec <- apply(mu, 1, fun_prepare)
-      return(sim(theta_hat * comp_vec))
+      return(sum(theta_hat * comp_vec))
     }
     
     p_new <- apply(x_obs, 1, f_test)
