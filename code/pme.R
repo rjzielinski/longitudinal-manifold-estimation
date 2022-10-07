@@ -45,13 +45,6 @@ source(list.files("subfunctions"))
 
 ## Subsection 1.1, Functions for Euclidean metrics
 
-# Norm function in an Euclidean space of any dimension
-
-# Distance function in an Euclidean space of any dimension
-dist.euclidean <- function(x, y) { 
-  return(norm_euclidean(x - y)) 
-}
-
 ## Subsection 1.2, Kernels for minimization in a semi-normed space of Sobolev type
 
 # Smoothing kernel for density estimation 
