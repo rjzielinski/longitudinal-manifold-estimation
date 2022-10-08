@@ -13,7 +13,7 @@ weight_seq <- function(x_obs, mu, sigma, epsilon = 0.001, max_iter = 1000) {
   D <- n_D[2]
   N <- dim(mu)[1]
   
-  A <- matrix(nrow = n, ncol = N)
+  A <- matrix(NA, nrow = n, ncol = N)
   for (j in 1:N) {
     A_prepare <- function(x) {
       return(ker(x, mu[j, ], sigma))
@@ -79,6 +79,6 @@ weight_seq <- function(x_obs, mu, sigma, epsilon = 0.001, max_iter = 1000) {
   }
   
   theta_hat <- pmax(theta_new, 0)
-  theta_hat <- pmin(theta_hat, 0)
+  theta_hat <- pmin(theta_hat, 1)
   return(theta_hat)
 }
